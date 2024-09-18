@@ -16,7 +16,7 @@ export class MembersService {
   private http = inject(HttpClient);
   private accountService = inject(AccountService);
   baseUrl = environment.apiUrl;
-  paginatedResults = signal<PaginatedResult<Member[]> | null>(null);
+  paginatedResult = signal<PaginatedResult<Member[]> | null>(null);
   memberCache = new Map();
   user = this.accountService.currentUser();
   userParams = signal<UserParams>(new UserParams(this.user));
@@ -27,7 +27,7 @@ export class MembersService {
 
   getMembers() {
     const response = this.memberCache.get(Object.values(this.userParams()).join('-'));
-    if(response) return setPaginatedResponse(response, this.paginatedResults);
+    if(response) return setPaginatedResponse(response, this.paginatedResult);
 
     let params = setPaginationHeaders(this.userParams().pageNumber, this.userParams().pageSize);
 
@@ -38,7 +38,7 @@ export class MembersService {
 
     return this.http.get<Member[]>(this.baseUrl + 'users', {observe: 'response', params}).subscribe({
       next: response => {
-        setPaginatedResponse(response, this.paginatedResults);
+        setPaginatedResponse(response, this.paginatedResult);
         this.memberCache.set(Object.values(this.userParams()).join('-'), response);
       }
     });
